@@ -3,6 +3,7 @@ Construis une base de données mysql à partir des fichiers textes de décès de
 
 
 Contenu du fichier
+
 Chaque enregistrement est relatif à une personne décédée et comporte les zones suivantes :
 
     le nom de famille
