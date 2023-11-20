@@ -1,8 +1,24 @@
-# dc
-Construis une base de données mysql à partir des fichiers textes de décès de l'INSEE
+# DC
+Construit une base de données mysql à partir des fichiers textes de décès de l'INSEE
 
+Pour récupérer les fichiers textes de l'INSEE, utiliser le script
+    
+    ./retrieve.sh
+qui les téléchargera tous.
 
-Contenu du fichier
+Les fichiers INSEE doivent être nettoyés et mis en format CSV pour être ingérés directement par mysql.
+Le programme *deces.ml* les traitera et les concatènera dans un fichier csv. 
+Pour le compiler:
+
+    make
+Une fois compilé, la syntaxe pour concaténer tous les fichiers de 1971 à 2022 est:
+
+    ./deces 1971 2022
+Le fichier résultat s'appellera *deces-1971-2022.csv*.
+
+Le fichier *deces.sql* contient les commandes sql de base pour créer la base de données à partir du fichier csv.
+
+<h2>Organisation des fichiers INSEE</h2>
 
 Chaque enregistrement est relatif à une personne décédée et comporte les zones suivantes :
 
