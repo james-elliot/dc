@@ -1,0 +1,7 @@
+deces-*.txt
+deces-*.csv
+deces
+*.cmi
+*.cmo
+*.o
+*~
