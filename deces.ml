@@ -6,25 +6,11 @@ let one fp fp_out =
   try
     while true do
       let s = input_line fp in
-      let n1 = try
-          String.index_from s 0 '*'
-        with Not_found ->
-          Printf.printf "%s\n" s;
-          -1 in
+      let n1 = try String.index_from s 0 '*' with Not_found -> -1 in
       let n2 = try String.index_from s 0 '/' with Not_found -> -1 in
-      let nom =
-        if n1<> -1 then
-          my_process (String.sub s 0 n1)
-        else
-          my_process (String.sub s 0 80) in
-      let prenom =
-        if (n1 <> -1) && (n2 <> -1) then
-          my_process (String.sub s (n1+1) (n2-n1-1))
-        else "" in
-      let sexe = match s.[80] with
-        | '1' -> 'H'
-        | '2' -> 'F'
-        | _ -> failwith "Erreur de sexe" in
+      let nom = my_process (String.sub s 0 (if n1<> -1 then  n1 else 80)) in
+      let prenom = if (n1 <> -1) && (n2 <> -1) then my_process (String.sub s (n1+1) (n2-n1-1)) else "" in
+      let sexe = match s.[80] with | '1' -> 'H' | '2' -> 'F' | _ -> failwith "Erreur de sexe" in
       let year_b = my_conv (String.sub s 81 4) in
       let month_b = my_conv (String.sub s 85 2) in
       let day_b = my_conv (String.sub s 87 2) in
@@ -40,11 +26,6 @@ let one fp fp_out =
         "\"%s\",\"%s\",\"%c\",\"%d\",\"%d\",\"%d\",\"%s\",\"%s\",\"%s\",\"%d\",\"%d\",\"%d\",\"%s\",\"%s\"\n"
         nom prenom sexe year_b month_b day_b insee_b commune_b pays_b
         year_d month_d day_d insee_d num_acte;
-      if (n1 = -1) || (n2 = -1) then
-        Printf.printf 
-          "%s,%s,%c,%d,%d,%d,%s,%s,%s,%d,%d,%d,%s,%s\n"
-          nom prenom sexe year_b month_b day_b insee_b commune_b pays_b
-          year_d month_d day_d insee_d num_acte;
     done
   with End_of_file -> ();;
 
@@ -61,4 +42,4 @@ let _ =
        one fp fp_out;
        close_in fp;
      done
-  | _ -> failwith "Wrong number of arguments";;
+  | _ -> failwith "Mauvais nombre d'arguments";;
