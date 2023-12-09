@@ -16,7 +16,9 @@ Une fois compilé, la syntaxe pour concaténer tous les fichiers de 1971 à 2022
     ./deces 1971 2022
 Le fichier résultat s'appellera *deces-1971-2022.csv*.
 
-Le fichier *deces.sql* contient les commandes sql de base pour créer la base de données à partir du fichier csv.
+Le fichier *deces.sql* contient les commandes sql de base pour créer la base de données mysql à partir du fichier csv.
+
+Le fichier *deces_postgres.sql* contient les mêmes commandes pour Postgre.
 
 <h2>Organisation des fichiers INSEE</h2>
 
