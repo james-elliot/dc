@@ -1,3 +1,5 @@
+-- sudo -u postgres psql template1
+
 CREATE TYPE sexe AS ENUM ('H','F');
 CREATE TABLE "DC" (
        "id" SERIAL,
@@ -34,5 +36,6 @@ COPY "DC"(
   	num_acte
 )
 FROM '/mnt/home2/alliot/ML/dc/deces-1970-2022.csv' CSV;
+
 CREATE INDEX ON "DC"(nom);
  
