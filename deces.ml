@@ -1,15 +1,19 @@
 let my_conv s = try int_of_string s with _  -> 0;;
-let my_replace c =  if (int_of_char c) > 127 then ' ' else c;;
+let my_replace c =  if ((int_of_char c) >= 127) || ((int_of_char c) < 32) || (c='"') then ' ' else c;;
 let my_process s = String.trim (String.map my_replace s);;
 
 let one fp fp_out =
   try
     while true do
       let s = input_line fp in
-      let n1 = try String.index_from s 0 '*' with Not_found -> -1 in
-      let n2 = try String.index_from s 0 '/' with Not_found -> -1 in
-      let nom = my_process (String.sub s 0 (if n1<> -1 then  n1 else 80)) in
-      let prenom = if (n1 <> -1) && (n2 <> -1) then my_process (String.sub s (n1+1) (n2-n1-1)) else "" in
+      let np = String.sub s 0 80 in
+      let n1 = try String.index_from np 0 '*' with Not_found -> 80 in
+      let nom = my_process (String.sub np 0 n1) in
+      let prenom =
+        if n1<>80 then
+          let n2 = try String.index_from np n1 '/' with Not_found -> 80 in
+          my_process (String.sub np (n1+1) (n2-n1-1))
+        else "" in
       let sexe = match s.[80] with | '1' -> 'H' | '2' -> 'F' | _ -> failwith "Erreur de sexe" in
       let year_b = my_conv (String.sub s 81 4) in
       let month_b = my_conv (String.sub s 85 2) in
