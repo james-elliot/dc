@@ -1,6 +1,19 @@
 let my_conv s = try int_of_string s with _  -> 0;;
-let my_replace c =  if ((int_of_char c) >= 127) || ((int_of_char c) < 32) || (c='"') then ' ' else c;;
-let my_process s = String.trim (String.map my_replace s);;
+let my_replace c =
+  let n = int_of_char c in
+  if (n=0x09) || (n=0x0A) || (n=0x0C) || (n=0x0D) || (n=0x22) then (Some ' ')
+  else if (n<=0x1F) || (n>=0x7F) then  None
+  else if (n>=0x61) && (n<=0x7A) then Some (char_of_int (n-0x20))
+  else Some c;;
+let my_process s =
+  let f (b,i) c =
+    match (my_replace c) with
+    | None -> (b,i)
+    | Some c -> Bytes.set b i c;(b,i+1) in
+  let b = Bytes.create (String.length s) in
+  let (b,n) = String.fold_left f (b,0) s in
+  String.trim (String.sub (Bytes.to_string b) 0 n);;
+
 
 let one fp fp_out =
   try
