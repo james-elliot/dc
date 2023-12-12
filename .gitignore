@@ -1,6 +1,7 @@
 deces-*.txt
 deces-*.csv
-deces
+deces_c
+deces_ml
 *.cm*
 *.o
 *~

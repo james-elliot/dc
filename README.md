@@ -1,19 +1,22 @@
 # DC
 Construit une base de données mysql à partir des fichiers textes de décès de l'INSEE
 
-Pour récupérer les fichiers textes de l'INSEE, utiliser le script
+Pour récupérer les fichiers textes de l'INSEE de 1970 à 2022, utiliser le script
 
     ./retrieve.sh
 qui les téléchargera tous.
 
 Les fichiers INSEE doivent être nettoyés et mis en format CSV pour être ingérés directement par mysql.
-Le programme *deces.ml* les traitera et les concatènera dans un fichier csv.
-Pour le compiler:
+Le programme *deces.c* ou le programme *deces.ml* les traitera et les concatènera dans un fichier csv.
+Pour compiler le programme C:
 
-    make
+    make deces_c
+Pour compiler le programme ML:
+
+	make deces_ml
 Une fois compilé, la syntaxe pour concaténer tous les fichiers de 1970 à 2022 est:
 
-    ./deces 1970 2022
+    ./deces_c 1970 2022
 Le fichier résultat s'appellera *deces-1970-2022.csv*.
 
 Le fichier *deces.sql* contient les commandes sql de base pour créer la base de données mysql à partir du fichier csv.
@@ -38,7 +41,7 @@ Chaque enregistrement est relatif à une personne décédée et comporte les zon
     le numéro d'acte de décès
 
 
-Le fichier est fourni au format txt, l'encodage est en ASCII sauf pour quelques caractères parasites en UTF-8. Comme l'indexage indiqué ci-dessous est fait sur les caractères et non sur les octets, il est indispensable de prétraiter toutes les lignes, ou d'utiliser une librairie capable de prendre en compte le codage UTF-8 des chaines de caractères (utilisation par exemple d'un itérateur *s.chars()* sur les caractères en Rust).
+Le fichier est fourni au format txt, l'encodage est en ASCII sauf pour quelques caractères parasites en UTF-8. Comme l'indexage indiqué ci-dessous est fait sur les caractères et non sur les octets, il est indispensable de prétraiter toutes les lignes, ou d'utiliser une librairie capable de prendre en compte le codage UTF-8 des chaines de caractères (utilisation par exemple d'un itérateur *s.chars()* sur les caractères en Rust). Il est également nécessaire de supprimer un certain nombre de caractères cachés, dont des NUL, des DEL, etc...
 
 Nom et Prénom - Longueur : 80 - Position : 1-80 - Type : Alphanumérique
 La forme générale est NOM*PRENOMS
