@@ -41,7 +41,7 @@ Chaque enregistrement est relatif à une personne décédée et comporte les zon
     le numéro d'acte de décès
 
 
-Le fichier est fourni au format txt, l'encodage est en ASCII sauf pour quelques caractères parasites en UTF-8. Comme l'indexage indiqué ci-dessous est fait sur les caractères et non sur les octets, il est indispensable de prétraiter toutes les lignes, ou d'utiliser une librairie capable de prendre en compte le codage UTF-8 des chaines de caractères (utilisation par exemple d'un itérateur *s.chars()* sur les caractères en Rust). Il est également nécessaire de supprimer un certain nombre de caractères cachés, dont des NUL, des DEL, etc...
+Le fichier est fourni au format txt, l'encodage est en ASCII sauf pour quelques caractères parasites en UTF-8 (REPLACEMENT_CHAR U+FFFD, probablement liés à des erreurs de décodage). Comme l'indexage indiqué ci-dessous est fait sur les caractères et non sur les octets, il est indispensable de prétraiter toutes les lignes, ou d'utiliser une librairie capable de prendre en compte le codage UTF-8 des chaines de caractères (utilisation par exemple d'un itérateur *s.chars()* sur les caractères en Rust). Il est également nécessaire de supprimer un certain nombre de caractères cachés, dont des NUL, des DEL, etc...
 
 Nom et Prénom - Longueur : 80 - Position : 1-80 - Type : Alphanumérique
 La forme générale est NOM*PRENOMS
