@@ -1,4 +1,12 @@
+(* Converts string to int returning 0 if error *)
 let my_conv s = try int_of_string s with _  -> 0;;
+
+(*
+  All lowercase are replaced with uppercase
+  All tabs/CR/LF/double quotes are replaced with spaces
+  All chars with a code above 7F or below 1F are suppressed
+  As the string has been processed to turn all UTF-8 multibytes sequence into a single byte, indexing is correct
+ *)
 let my_replace c =
   let n = int_of_char c in
   if (n=0x09) || (n=0x0A) || (n=0x0C) || (n=0x0D) || (n=0x22) then (Some ' ')
@@ -14,11 +22,22 @@ let my_process s =
   let (b,n) = String.fold_left f (b,0) s in
   String.trim (String.sub (Bytes.to_string b) 0 n);;
 
-
+(* Transforms all sequence of UTF8 bytes into a single byte *)
+let process_utf8 s =
+  let b = Bytes.create (String.length s) in
+  let flag = ref false in
+  let j = ref 0 in
+  for i = 0 to String.length s -1 do
+    if ((int_of_char s.[i])<128) || (not !flag) then (Bytes.set b !j s.[i];incr j);
+    if (int_of_char s.[i])<128 then flag:=false else flag:=true;
+  done;
+  Bytes.to_string (Bytes.sub b 0 !j);;
+  
 let one fp fp_out =
   try
     while true do
       let s = input_line fp in
+      let s = process_utf8 s in
       let np = String.sub s 0 80 in
       let n1 = try String.index_from np 0 '*' with Not_found -> 80 in
       let nom = my_process (String.sub np 0 n1) in
