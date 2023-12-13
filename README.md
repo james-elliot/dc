@@ -25,6 +25,8 @@ Le fichier *deces_postgres.sql* contient les mêmes commandes pour Postgre.
 
 Les dates ont volontairement été placés dans trois champs différents (jour, mois, année) car certaines dates sont incorrectes (informations manquantes, ou dates impossibles). Les stocker dans un seul champ date aurait imposé un pré-processing qui aurait possiblement détruit des informations.
 
+Les fichiers INSEE sont fournis au format txt, mais ils sont de mauvaise qualité. L'encodage est en ASCII sauf pour quelques caractères en UTF-8 dont la majorité sont des REPLACEMENT_CHAR U+FFFD, probablement liés à des erreurs de décodage). D'autre part, il existe également des octets avec une valeur supérieure à 0x7F, mais qui ne sont pas des préfixes à un encodage UTF-8 valide. Il est également nécessaire de supprimer un certain nombre de caractères cachés, dont des NUL, des DEL, etc... Le choix a donc été fait  de transformer la totalité du fichier CSV en ASCII de base, et en majuscules. Comme l'indexage indiqué ci-dessous est fait sur les caractères et non sur les octets, il est indispensable de prétraiter toutes les lignes. Il est impossible d'utiliser une librairie capable de prendre en compte directement le codage UTF-8 des chaines de caractères comme en Rust, car Rust impose que les chaines de caractère soient en UTF-8 valides et refuse simplement de lire les lignes contenant des encodages invalides. 
+
 <h2>Organisation des fichiers INSEE</h2>
 
 Chaque enregistrement est relatif à une personne décédée et comporte les zones suivantes :
@@ -40,8 +42,6 @@ Chaque enregistrement est relatif à une personne décédée et comporte les zon
     le code du lieu de décès
     le numéro d'acte de décès
 
-
-Le fichier est fourni au format txt, l'encodage est en ASCII sauf pour quelques caractères parasites en UTF-8 (REPLACEMENT_CHAR U+FFFD, probablement liés à des erreurs de décodage). Comme l'indexage indiqué ci-dessous est fait sur les caractères et non sur les octets, il est indispensable de prétraiter toutes les lignes, ou d'utiliser une librairie capable de prendre en compte le codage UTF-8 des chaines de caractères (utilisation par exemple d'un itérateur *s.chars()* sur les caractères en Rust). Il est également nécessaire de supprimer un certain nombre de caractères cachés, dont des NUL, des DEL, etc...
 
 Nom et Prénom - Longueur : 80 - Position : 1-80 - Type : Alphanumérique
 La forme générale est NOM*PRENOMS
