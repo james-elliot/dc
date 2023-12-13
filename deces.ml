@@ -22,14 +22,34 @@ let my_process s =
   let (b,n) = String.fold_left f (b,0) s in
   String.trim (String.sub (Bytes.to_string b) 0 n);;
 
-(* Transforms all sequence of UTF8 bytes into a single byte *)
+(* Transforms all sequence of UTF8 bytes, or invalid encoding, into a single byte *)
 let process_utf8 s =
-  let b = Bytes.create (String.length s) in
-  let flag = ref false in
-  let j = ref 0 in
-  for i = 0 to String.length s -1 do
-    if ((int_of_char s.[i])<128) || (not !flag) then (Bytes.set b !j s.[i];incr j);
-    if (int_of_char s.[i])<128 then flag:=false else flag:=true;
+  let invalid_byte=char_of_int 0xFF in
+  let nb = String.length s in
+  let b = Bytes.create nb in
+  let j = ref 0 and i = ref 0 in
+  while (!i<nb) do
+    let n = int_of_char s.[!i] in
+    if (n<128) then (Bytes.set b !j s.[!i];incr i)
+    else (
+      Bytes.set b !j invalid_byte;
+      if ((n land 0b11100000)=0b11000000) && (!i<(nb-1)) &&
+           (((int_of_char s.[!i+1]) land 0b11000000)=0b10000000) then (
+        i:= !i+2)
+      else if ((n land 0b11110000)=0b11100000) && (!i<(nb-2)) &&
+                (((int_of_char s.[!i+1]) land 0b11000000)=0b10000000) &&
+                  (((int_of_char s.[!i+2]) land 0b11000000)=0b10000000) then (
+        i:= !i+3;
+      )
+      else if ((n land 0b11111000)=0b11110000) && (!i<(nb-3)) &&
+                (((int_of_char s.[!i+1]) land 0b11000000)=0b10000000) &&
+                  (((int_of_char s.[!i+2]) land 0b11000000)=0b10000000) &&
+                    (((int_of_char s.[!i+3]) land 0b11000000)=0b10000000) then (
+        i:= !i+4;
+      )
+      else incr i
+    );
+    incr j;
   done;
   Bytes.to_string (Bytes.sub b 0 !j);;
   
