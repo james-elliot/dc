@@ -2,6 +2,8 @@ deces-*.txt
 deces-*.csv
 deces_c
 deces_ml
+deces_rs
 *.cm*
 *.o
 *~
+dcrust
