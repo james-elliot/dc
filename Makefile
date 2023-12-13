@@ -8,4 +8,4 @@ deces_rs: deces.rs
 	rustc -O -o deces_ml deces.rs
 
 clean:
-	rm -rf *~ *.o *.cm* deces_ml deces_c
+	rm -rf *~ *.o *.cm* deces_ml deces_c deces_rs
