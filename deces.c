@@ -40,10 +40,24 @@ int conv(char *line,int n1,int l) {
 }
 
 int process_utf8(char *s,int n) {
-  int j=0,flag=false;
-  for (int i=0;i<=n;i++) {
-    if ((s[i]>=0) || !flag) s[j++]=s[i];
-    if (s[i]>=0) flag=false; else flag=true;
+  int j=0,i=0;
+  while (i<=n) {
+    if (s[i]>=0)  s[j++]=s[i++];
+    else {
+      int inc;
+      if (((s[i] & 0b11100000)==0b11000000) && (i<n) &&
+	  ((s[i+1] & 0b11000000)==0b10000000)) inc=2;
+      else if (((s[i] & 0b11110000)==0b11100000) && (i<n-1) &&
+	       ((s[i+1] & 0b11000000)==0b10000000) &&
+	       ((s[i+2] & 0b11000000)==0b10000000)) inc=3;
+      else if (((s[i] & 0b11111000)==0b11110000) && (i<n-2) &&
+	       ((s[i+1] & 0b11000000)==0b10000000) &&
+	       ((s[i+2] & 0b11000000)==0b10000000) &&
+	       ((s[i+3] & 0b11000000)==0b10000000)) inc=4;
+      else inc=1;
+      i+=inc;
+      s[j++]=-127;
+    }
   }
   s[j]=0;
   return j-1;
