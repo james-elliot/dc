@@ -22,32 +22,35 @@ pub fn process(s_in: []u8, buf: []u8) []u8 {
             j += 1;
         }
     }
-    while ((j > 0) and (buf[j - 1] == ' ')) {
-        j -= 1;
-    }
+    while ((j > 0) and (buf[j - 1] == ' ')) j -= 1;
     const end = j;
     j = 0;
-    while ((buf[j] == ' ') and (j < end)) {
-        j += 1;
-    }
+    while ((buf[j] == ' ') and (j < end)) j += 1;
     return buf[j..end];
 }
 
 pub fn process_utf8(s: []u8) []u8 {
     var j: u32 = 0;
-    for (0..s.len()) |i| {
-        if (s[i] >= 0) {
+    var i: u32 = 0;
+    while (i < s.len()) {
+        if (s[i] < 128) {
             s[j] = s[i];
             i += 1;
             j += 1;
         } else {
-            const inc = std.unicode.utf8ByteSequenceLength(s[i]) catch 1;
-            i += inc;
+            i += std.unicode.utf8ByteSequenceLength(s[i]) catch 1;
             s[j] = 255;
             j += 1;
         }
     }
     return s[0..(j - 1)];
+}
+
+pub fn find(s: []u8, f: u8) u32 {
+    for (s, 0..) |c, i| {
+        if (c == f) return i;
+    }
+    return s.len();
 }
 
 pub fn main() !void {
