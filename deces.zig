@@ -48,17 +48,10 @@ pub fn find(s: []u8, f: u8) usize {
     return s.len;
 }
 
-pub fn main() !void {
-    var file = try std.fs.cwd().openFile("deces-1970.txt", .{});
-    defer file.close();
-    var buf_reader = std.io.bufferedReader(file.reader());
+const buf_size: usize = 4096;
+pub fn one(buf_reader: *std.io.BufferedReader(buf_size, std.fs.File.Reader), buf_writer: *std.io.BufferedWriter(buf_size, std.fs.File.Writer)) !void {
     var in_stream = buf_reader.reader();
-
-    var file2 = try std.fs.cwd().createFile("deces-1970.csv", .{});
-    defer file2.close();
-    var buf_writer = std.io.bufferedWriter(file2.writer());
     var out_stream = buf_writer.writer();
-
     var buf: [1024]u8 = undefined;
     var buf_nom: [80]u8, var buf_prenom: [80]u8 = .{ undefined, undefined };
     var buf_commune_b: [80]u8, var buf_pays_b: [80]u8 = .{ undefined, undefined };
@@ -84,4 +77,35 @@ pub fn main() !void {
         const num_acte = process(s[167..176], &buf_acte);
         try out_stream.print("\"{s}\",\"{s}\",\"{c}\",\"{d}\",\"{d}\",\"{d}\",\"{s}\",\"{s}\",\"{s}\",\"{d}\",\"{d}\",\"{d}\",\"{s}\",\"{s}\"\n", .{ nom, prenom, sexe, year_b, month_b, day_b, insee_b, commune_b, pays_b, year_d, month_d, day_d, insee_d, num_acte });
     }
+    try buf_writer.flush();
+}
+
+pub fn main() !void {
+    var buffer = [_]u8{0} ** 256;
+
+    var args = std.process.args();
+    _ = args.next();
+    var i: usize = 0;
+    var start: usize = 0;
+    var end: usize = 0;
+    while (args.next()) |arg| {
+        //        const printed = try std.fmt.bufPrint(&buffer, "https://github.com/{s}/reponame", .{arg});
+        if (i == 0) {
+            start = try std.fmt.parseUnsigned(u32, arg, 10);
+        } else {
+            end = try std.fmt.parseUnsigned(u32, arg, 10);
+        }
+        i += 1;
+        std.debug.print("{d} {d}\n", .{ start, end });
+    }
+    var file = try std.fs.cwd().openFile("deces-1970.txt", .{});
+    defer file.close();
+    var buf_reader = std.io.bufferedReaderSize(buf_size, file.reader());
+
+    var file2 = try std.fs.cwd().createFile("deces-1970.csv", .{});
+    defer file2.close();
+    var buf_writer = std.io.bufferedWriter(file2.writer());
+
+    try one(&buf_reader, &buf_writer);
+    std.debug.print("coucou\n", .{});
 }
