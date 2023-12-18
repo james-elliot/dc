@@ -27,13 +27,33 @@ pub fn process(s_in: []u8, buf: []u8) []u8 {
 
 pub fn process_utf8(s: []u8) []u8 {
     var i: u32, var j: u32 = .{ 0, 0 };
-    while (i < s.len) {
+    var n: usize = s.len;
+    while (i < n) {
         if (s[i] < 128) {
             s[j] = s[i];
             i += 1;
             j += 1;
         } else {
-            i += std.unicode.utf8ByteSequenceLength(s[i]) catch 1;
+            var inc: u32 = 0;
+            if (((s[i] & 0b11100000) == 0b11000000) and (i < n - 1) and
+                ((s[i + 1] & 0b11000000) == 0b10000000))
+            {
+                inc = 2;
+            } else if (((s[i] & 0b11110000) == 0b11100000) and (i < n - 2) and
+                ((s[i + 1] & 0b11000000) == 0b10000000) and
+                ((s[i + 2] & 0b11000000) == 0b10000000))
+            {
+                inc = 3;
+            } else if (((s[i] & 0b11111000) == 0b11110000) and (i < n - 3) and
+                ((s[i + 1] & 0b11000000) == 0b10000000) and
+                ((s[i + 2] & 0b11000000) == 0b10000000) and
+                ((s[i + 3] & 0b11000000) == 0b10000000))
+            {
+                inc = 4;
+            } else {
+                inc = 1;
+            }
+            i += inc;
             s[j] = 255;
             j += 1;
         }
@@ -51,15 +71,24 @@ pub fn find(s: []u8, f: u8) usize {
 const buf_size: usize = 4096;
 pub fn one(in_stream: *std.io.BufferedReader(buf_size, std.fs.File.Reader).Reader, out_stream: *std.io.BufferedWriter(buf_size, std.fs.File.Writer).Writer) !void {
     var buf: [1024]u8 = undefined;
-    var buf_nom: [80]u8, var buf_prenom: [80]u8 = .{ undefined, undefined };
+    var buf_nom: [81]u8, var buf_prenom: [81]u8 = .{ undefined, undefined };
     var buf_commune_b: [80]u8, var buf_pays_b: [80]u8 = .{ undefined, undefined };
     var buf_acte: [80]u8 = undefined;
     while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
         const s = process_utf8(line);
-        const n1 = find(s[0..81], '*');
+        const n1 = find(s[0..80], '*');
         const nom = process(s[0..n1], &buf_nom);
-        const n2 = find(s[n1 + 1 .. 81], '/');
-        const prenom = process(s[n1 + 1 .. n1 + 1 + n2], &buf_prenom);
+        var prenom: []u8 = undefined;
+        if (n1 < 79) {
+            const n2 = find(s[n1 + 1 .. 80], '/');
+            if (n2 == (80 - n1)) {
+                prenom = process(s[n1 + 1 .. 80], &buf_prenom);
+            } else {
+                prenom = process(s[n1 + 1 .. @min(n1 + 1 + n2, 80)], &buf_prenom);
+            }
+        } else {
+            prenom = "";
+        }
         var sexe: u8 = undefined;
         if (s[80] == '1') sexe = 'H' else sexe = 'F';
         const year_b = conv(s[81..85]);
@@ -104,7 +133,7 @@ pub fn main() !void {
             var buf_writer = std.io.bufferedWriter(file_out.writer());
             var out_stream = buf_writer.writer();
             std.debug.print("{d} {d} {s} {s}\n", .{ start, end, name_in, name_out });
-            try one(&in_stream, &out_stream);
+            one(&in_stream, &out_stream) catch std.debug.print("Error in one\n", .{});
             try buf_writer.flush();
             file_in.close();
             file_out.close();
@@ -120,7 +149,7 @@ pub fn main() !void {
                 var buf_reader = std.io.bufferedReaderSize(buf_size, file_in.reader());
                 var in_stream = buf_reader.reader();
                 std.debug.print("{d} {d} {s} {s}\n", .{ start, end, name_in, name_out });
-                try one(&in_stream, &out_stream);
+                one(&in_stream, &out_stream) catch std.debug.print("Error in one\n", .{});
                 file_in.close();
             }
             try buf_writer.flush();
