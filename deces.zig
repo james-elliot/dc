@@ -49,9 +49,7 @@ pub fn find(s: []u8, f: u8) usize {
 }
 
 const buf_size: usize = 4096;
-pub fn one(buf_reader: *std.io.BufferedReader(buf_size, std.fs.File.Reader), buf_writer: *std.io.BufferedWriter(buf_size, std.fs.File.Writer)) !void {
-    var in_stream = buf_reader.reader();
-    var out_stream = buf_writer.writer();
+pub fn one(in_stream: *std.io.BufferedReader(buf_size, std.fs.File.Reader).Reader, out_stream: *std.io.BufferedWriter(buf_size, std.fs.File.Writer).Writer) !void {
     var buf: [1024]u8 = undefined;
     var buf_nom: [80]u8, var buf_prenom: [80]u8 = .{ undefined, undefined };
     var buf_commune_b: [80]u8, var buf_pays_b: [80]u8 = .{ undefined, undefined };
@@ -77,35 +75,59 @@ pub fn one(buf_reader: *std.io.BufferedReader(buf_size, std.fs.File.Reader), buf
         const num_acte = process(s[167..176], &buf_acte);
         try out_stream.print("\"{s}\",\"{s}\",\"{c}\",\"{d}\",\"{d}\",\"{d}\",\"{s}\",\"{s}\",\"{s}\",\"{d}\",\"{d}\",\"{d}\",\"{s}\",\"{s}\"\n", .{ nom, prenom, sexe, year_b, month_b, day_b, insee_b, commune_b, pays_b, year_d, month_d, day_d, insee_d, num_acte });
     }
-    try buf_writer.flush();
 }
 
 pub fn main() !void {
-    var buffer = [_]u8{0} ** 256;
-
+    var buffer_in = [_]u8{0} ** 256;
+    var buffer_out = [_]u8{0} ** 256;
     var args = std.process.args();
     _ = args.next();
     var i: usize = 0;
     var start: usize = 0;
     var end: usize = 0;
     while (args.next()) |arg| {
-        //        const printed = try std.fmt.bufPrint(&buffer, "https://github.com/{s}/reponame", .{arg});
         if (i == 0) {
             start = try std.fmt.parseUnsigned(u32, arg, 10);
         } else {
             end = try std.fmt.parseUnsigned(u32, arg, 10);
         }
         i += 1;
-        std.debug.print("{d} {d}\n", .{ start, end });
     }
-    var file = try std.fs.cwd().openFile("deces-1970.txt", .{});
-    defer file.close();
-    var buf_reader = std.io.bufferedReaderSize(buf_size, file.reader());
-
-    var file2 = try std.fs.cwd().createFile("deces-1970.csv", .{});
-    defer file2.close();
-    var buf_writer = std.io.bufferedWriter(file2.writer());
-
-    try one(&buf_reader, &buf_writer);
-    std.debug.print("coucou\n", .{});
+    switch (i) {
+        1 => {
+            const name_out = try std.fmt.bufPrint(&buffer_out, "deces-{d}.csv", .{start});
+            const name_in = try std.fmt.bufPrint(&buffer_in, "deces-{d}.txt", .{start});
+            var file_in = try std.fs.cwd().openFile(name_in, .{});
+            var buf_reader = std.io.bufferedReaderSize(buf_size, file_in.reader());
+            var in_stream = buf_reader.reader();
+            var file_out = try std.fs.cwd().createFile(name_out, .{});
+            var buf_writer = std.io.bufferedWriter(file_out.writer());
+            var out_stream = buf_writer.writer();
+            std.debug.print("{d} {d} {s} {s}\n", .{ start, end, name_in, name_out });
+            try one(&in_stream, &out_stream);
+            try buf_writer.flush();
+            file_in.close();
+            file_out.close();
+        },
+        2 => {
+            const name_out = try std.fmt.bufPrint(&buffer_out, "deces-{d}-{d}.csv", .{ start, end });
+            var file_out = try std.fs.cwd().createFile(name_out, .{});
+            var buf_writer = std.io.bufferedWriter(file_out.writer());
+            var out_stream = buf_writer.writer();
+            for (start..end + 1) |y| {
+                const name_in = try std.fmt.bufPrint(&buffer_in, "deces-{d}.txt", .{y});
+                var file_in = try std.fs.cwd().openFile(name_in, .{});
+                var buf_reader = std.io.bufferedReaderSize(buf_size, file_in.reader());
+                var in_stream = buf_reader.reader();
+                std.debug.print("{d} {d} {s} {s}\n", .{ start, end, name_in, name_out });
+                try one(&in_stream, &out_stream);
+                file_in.close();
+            }
+            try buf_writer.flush();
+            file_out.close();
+        },
+        else => {
+            std.debug.print("Incorrect number of arguments\n", .{});
+        },
+    }
 }
