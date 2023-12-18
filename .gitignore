@@ -3,6 +3,7 @@ deces-*.csv
 deces_c
 deces_ml
 deces_rs
+deces
 *.cm*
 *.o
 *~
