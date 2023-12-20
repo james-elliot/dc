@@ -19,19 +19,23 @@ Une fois compilé, la syntaxe pour concaténer tous les fichiers de 1970 à 2022
     ./deces_c 1970 2022
 Le fichier résultat s'appellera *deces-1970-2022.csv*. Pour information, il faut environ 20s au programme C pour traiter la totalité des fichiers de 1970 à 2022, et 80s au programme ML. La différence d'efficacité n'est pas lié au langage, mais à la façon de les utiliser. Le programme ML a été écrit en très peu de temps, et sans erreur ni debugging, le programme en C ne fait jamais de copie et modifie les chaines "en place", mais a nécessité un peu plus de temps d'écriture, et je ne recommanderais pas ce type de programmation à des débutants.
 
+Il existe également une version en ZIG du programme, qui fonctionne comme la version en C et en ML. Elle est légèrement plus rapide que le C (10% environ). Pour la compiler:
+
+	make deces
+
 Le fichier *deces.sql* contient les commandes sql de base pour créer la base de données mysql à partir du fichier csv.
 
 Le fichier *deces_postgres.sql* contient les mêmes commandes pour Postgre.
 
 Les dates ont volontairement été placés dans trois champs différents (jour, mois, année) car certaines dates sont incorrectes (informations manquantes, ou dates impossibles). Les stocker dans un seul champ date aurait imposé un pré-processing qui aurait possiblement détruit des informations.
 
-Les fichiers INSEE sont fournis au format txt, mais ils sont de mauvaise qualité. L'encodage est en ASCII sauf pour quelques caractères en UTF-8 dont la majorité sont des REPLACEMENT_CHAR U+FFFD, probablement liés à des erreurs de décodage. D'autre part, il existe également des octets avec une valeur supérieure à 0x7F, mais qui ne sont pas des préfixes à un encodage UTF-8 valide. Il est également nécessaire de supprimer un certain nombre de caractères cachés, dont des NUL, des DEL, etc... Le choix a donc été fait  de transformer la totalité du fichier CSV en ASCII de base, et en majuscules. Comme l'indexage indiqué ci-dessous est fait sur les caractères et non sur les octets, il est indispensable de prétraiter toutes les lignes. Il est impossible d'utiliser une librairie capable de prendre en compte directement le codage UTF-8 des chaines de caractères comme en Rust, car Rust impose que les chaines de caractère soient en UTF-8 valides et refuse simplement de lire les lignes contenant des encodages invalides. 
+Les fichiers INSEE sont fournis au format txt, mais ils sont de mauvaise qualité. L'encodage est en ASCII sauf pour quelques caractères en UTF-8 dont la majorité sont des REPLACEMENT_CHAR U+FFFD, probablement liés à des erreurs de décodage. D'autre part, il existe également des octets avec une valeur supérieure à 0x7F, mais qui ne sont pas des préfixes à un encodage UTF-8 valide. Il est également nécessaire de supprimer un certain nombre de caractères cachés, dont des NUL, des DEL, etc... Le choix a donc été fait  de transformer la totalité du fichier CSV en ASCII de base, et en majuscules. Comme l'indexage indiqué ci-dessous est fait sur les caractères et non sur les octets, il est indispensable de prétraiter toutes les lignes.  
 
 IL y a également une version Rust du programme *deces.rs*. Pour la compiler
 
 	make deces_rs
 	
-La version Rust fonctionne différemment des versions C et ML. Elle conserve les caractères UTF-8 sauf les REPLACEMENT_CHAR (à noter que cela conserve certains caractères accentués, mais conserve également des caractères sans signification) et ne passe pas le texte en majuscule. En revanche, elle élimine les enregistrements contenant des codes UTF-8 invalides (environ 900).
+La version Rust fonctionne différemment des versions C, ML et ZIG. Elle conserve les caractères UTF-8 sauf les REPLACEMENT_CHAR (à noter que cela conserve certains caractères accentués, mais conserve également des caractères sans signification). Les caractères non valides sont interprétés comme de l'ISO-8859-1 et convertis en UTF-8, les codes compris entre 0x7F et 0xBF sont supprimés à l'exception de 0xB0, 0xBA, OXAB et OxBB. Toutes les chaines de caractères sont transformées en capitales.
 
 <h2>Organisation des fichiers INSEE</h2>
 
