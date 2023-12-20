@@ -27,7 +27,7 @@ pub fn process(s_in: []u8, buf: []u8) []u8 {
 
 pub fn process_utf8(s: []u8) []u8 {
     var i: u32, var j: u32 = .{ 0, 0 };
-    var n: usize = s.len;
+    const n: usize = s.len;
     while (i < n) {
         if (s[i] < 128) {
             s[j] = s[i];
