@@ -1,7 +1,7 @@
 -- sudo -u postgres psql template1
-
+CREATE USER alliot with CREATEDB ENCRYPTED PASSWORD 'mon_pass';
 CREATE TYPE sexe AS ENUM ('H','F');
-CREATE TABLE "DC" (
+CREATE TABLE dc (
        "id" SERIAL,
        "nom" VARCHAR(80) NULL,
     	"prenom" VARCHAR(80) NULL,	
@@ -19,7 +19,7 @@ CREATE TABLE "DC" (
   	"num_acte" VARCHAR(9) NULL,
   PRIMARY KEY ("id"));
   
-COPY "DC"(
+COPY dc (
        nom,
     	prenom,
   	sexe,
@@ -37,5 +37,5 @@ COPY "DC"(
 )
 FROM '/mnt/home2/alliot/ML/dc/deces-1970-2022.csv' CSV;
 
-CREATE INDEX ON "DC"(nom);
+CREATE INDEX ON dc(nom);
  
