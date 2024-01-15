@@ -1,5 +1,13 @@
 -- sudo -u postgres psql template1
 CREATE USER alliot with CREATEDB ENCRYPTED PASSWORD 'mon_pass';
+-- sudo -u alliot psql template1
+CREATE DATABASE dc;
+-- sudo -u alliot psql dc
+-- OU: psql -U alliot -h 192.168.1.1 -p 5432 dc
+-- postgresql.conf doit être modifié:
+-- listen_addresses = '*'
+-- pg_hba.conf doit être modifié:
+-- host    all             all             192.168.1.0/24            scram-sha-256
 CREATE TYPE sexe AS ENUM ('H','F');
 CREATE TABLE dc (
        "id" SERIAL,
