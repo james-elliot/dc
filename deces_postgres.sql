@@ -1,5 +1,6 @@
 -- sudo -u postgres psql template1
 CREATE USER alliot with CREATEDB ENCRYPTED PASSWORD 'mon_pass';
+GRANT pg_read_server_files TO alliot;
 -- sudo -u alliot psql template1
 CREATE DATABASE dc;
 -- sudo -u alliot psql dc
